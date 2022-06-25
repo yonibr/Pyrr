@@ -6,7 +6,10 @@ Eulers represent 3 rotations: Pitch, Roll and Yaw.
 Eulers are represented using a numpy.array of shape (3,).
 """
 from __future__ import absolute_import, division, print_function
+
 import numpy as np
+
+from numba import jit_module
 
 
 class index:
@@ -69,3 +72,6 @@ def pitch(eulers):
     :rtype: float.
     """
     return eulers[1]
+
+
+jit_module(nopython=True, error_model="numpy")

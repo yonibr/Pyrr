@@ -51,6 +51,7 @@ from .. import vector4
 
 # TODO: add < <= > >= == != operators
 
+
 class Vector4(BaseVector4):
     _module = vector4
     _shape = (4,)

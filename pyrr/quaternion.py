@@ -2,7 +2,11 @@
 """Provide functions for the creation and manipulation of Quaternions.
 """
 from __future__ import absolute_import, division, print_function
+
 import numpy as np
+
+from numba import jit_module
+
 from . import vector, vector3, vector4, euler
 from .utils import all_parameters_as_numpy_arrays, parameters_as_numpy_arrays
 
@@ -24,6 +28,7 @@ class index:
 def create(x=0., y=0., z=0., w=1., dtype=None):
     return np.array([x, y, z, w], dtype=dtype)
 
+
 def create_from_x_rotation(theta, dtype=None):
     thetaOver2 = theta * 0.5
 
@@ -36,6 +41,7 @@ def create_from_x_rotation(theta, dtype=None):
         ],
         dtype=dtype
     )
+
 
 def create_from_y_rotation(theta, dtype=None):
     thetaOver2 = theta * 0.5
@@ -50,6 +56,7 @@ def create_from_y_rotation(theta, dtype=None):
         dtype=dtype
     )
 
+
 def create_from_z_rotation(theta, dtype=None):
     thetaOver2 = theta * 0.5
 
@@ -63,12 +70,13 @@ def create_from_z_rotation(theta, dtype=None):
         dtype=dtype
     )
 
-@parameters_as_numpy_arrays('axis')
+
+# @parameters_as_numpy_arrays('axis')
 def create_from_axis_rotation(axis, theta, dtype=None):
-    dtype = dtype or axis.dtype
+    dtype = dtype if dtype is not None else axis.dtype
+
     # make sure the vector is normalized
-    if not np.isclose(np.linalg.norm(axis), 1.):
-        axis = vector.normalize(axis)
+    axis /= np.sqrt(np.sum(axis**2))
 
     thetaOver2 = theta * 0.5
     sinThetaOver2 = np.sin(thetaOver2)
@@ -83,18 +91,20 @@ def create_from_axis_rotation(axis, theta, dtype=None):
         dtype=dtype
     )
 
-@parameters_as_numpy_arrays('axis')
+
+# @parameters_as_numpy_arrays('axis')
 def create_from_axis(axis, dtype=None):
-    dtype = dtype or axis.dtype
+    dtype = dtype if dtype is not None else axis.dtype
     theta = np.linalg.norm(axis)
     return create_from_axis_rotation(axis, theta, dtype)
 
-@parameters_as_numpy_arrays('mat')
+
+# @parameters_as_numpy_arrays('mat')
 def create_from_matrix(mat, dtype=None):
     # http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
     # optimised "alternative version" does not produce correct results
     # see issue #42
-    dtype = dtype or mat.dtype
+    dtype = dtype if dtype is not None else mat.dtype
 
     trace = mat[0][0] + mat[1][1] + mat[2][2]
     if trace > 0:
@@ -125,14 +135,15 @@ def create_from_matrix(mat, dtype=None):
     quat = np.array([qx, qy, qz, qw], dtype=dtype)
     return quat
 
-@parameters_as_numpy_arrays('eulers')
-def create_from_eulers(eulers, dtype=None):
+
+# @parameters_as_numpy_arrays('eulers')
+def create_from_eulers(eulers):
     """Creates a quaternion from a set of Euler angles.
 
     Eulers are an array of length 3 in the following order:
         [roll, pitch, yaw]
     """
-    dtype = dtype or eulers.dtype
+    dtype = eulers.dtype
 
     roll, pitch, yaw = euler.roll(eulers), euler.pitch(eulers), euler.yaw(eulers)
 
@@ -158,14 +169,15 @@ def create_from_eulers(eulers, dtype=None):
         dtype=dtype
     )
 
-@parameters_as_numpy_arrays('eulers')
+
+# @parameters_as_numpy_arrays('eulers')
 def create_from_inverse_of_eulers(eulers, dtype=None):
     """Creates a quaternion from the inverse of a set of Euler angles.
 
     Eulers are an array of length 3 in the following order:
         [roll, pitch, yaw]
     """
-    dtype = dtype or eulers.dtype
+    dtype = dtype if dtype is not None else eulers.dtype
 
     roll, pitch, yaw = euler.roll(eulers), euler.pitch(eulers), euler.yaw(eulers)
 
@@ -195,7 +207,8 @@ def create_from_inverse_of_eulers(eulers, dtype=None):
         dtype=dtype
     )
 
-@all_parameters_as_numpy_arrays
+
+# @all_parameters_as_numpy_arrays
 def cross(quat1, quat2):
     """Returns the cross-product of the two quaternions.
 
@@ -217,24 +230,28 @@ def cross(quat1, quat2):
         dtype=quat1.dtype
     )
 
+
 def lerp(quat1, quat2, t):
     """Interpolates between quat1 and quat2 by t.
     The parameter t is clamped to the range [0, 1]
     """
 
-    quat1 = np.asarray(quat1)
-    quat2 = np.asarray(quat2)
+    # quat1 = np.asarray(quat1)
+    # quat2 = np.asarray(quat2)
 
     t = np.clip(t, 0, 1)
-    return normalize(quat1 * (1 - t) + quat2 * t)
+    quat = quat1 * (1 - t) + quat2 * t
+    quat /= np.sqrt(np.sum(quat**2))
+    return quat
+
 
 def slerp(quat1, quat2, t):
     """Spherically interpolates between quat1 and quat2 by t.
     The parameter t is clamped to the range [0, 1]
     """
 
-    quat1 = np.asarray(quat1)
-    quat2 = np.asarray(quat2)
+    # quat1 = np.asarray(quat1)
+    # quat2 = np.asarray(quat2)
 
     t = np.clip(t, 0, 1)
     dot = vector4.dot(quat1, quat2)
@@ -255,6 +272,7 @@ def slerp(quat1, quat2, t):
 
     return res
 
+
 def is_zero_length(quat):
     """Checks if a quaternion is zero length.
 
@@ -263,6 +281,7 @@ def is_zero_length(quat):
     :return: True if the quaternion is zero length, otherwise False.
     """
     return quat[0] == quat[1] == quat[2] == quat[3] == 0.0
+
 
 def is_non_zero_length(quat):
     """Checks if a quaternion is not zero length.
@@ -278,6 +297,7 @@ def is_non_zero_length(quat):
     """
     return not is_zero_length(quat)
 
+
 def squared_length(quat):
     """Calculates the squared length of a quaternion.
 
@@ -292,6 +312,7 @@ def squared_length(quat):
     """
     return vector4.squared_length(quat)
 
+
 def length(quat):
     """Calculates the length of a quaternion.
 
@@ -303,6 +324,7 @@ def length(quat):
     """
     return vector4.length(quat)
 
+
 def normalize(quat):
     """Ensure a quaternion is unit length (length ~= 1.0).
 
@@ -312,7 +334,8 @@ def normalize(quat):
     :rtype: numpy.array
     :return: The normalized quaternion(s).
     """
-    return vector4.normalize(quat)
+    return vector.normalize(quat)
+
 
 def normalise(quat):    # TODO: mark as deprecated
     """Ensure a quaternion is unit length (length ~= 1.0).
@@ -323,7 +346,8 @@ def normalise(quat):    # TODO: mark as deprecated
     :rtype: numpy.array
     :return: The normalized quaternion(s).
     """
-    return vector4.normalize(quat)
+    return vector.normalize(quat)
+
 
 def rotation_angle(quat):
     """Calculates the rotation around the quaternion's axis.
@@ -336,7 +360,8 @@ def rotation_angle(quat):
     thetaOver2 = np.arccos(quat[3])
     return thetaOver2 * 2.0
 
-@all_parameters_as_numpy_arrays
+
+# @all_parameters_as_numpy_arrays
 def rotation_axis(quat):
     """Calculates the axis of the quaternion's rotation.
 
@@ -366,6 +391,7 @@ def rotation_axis(quat):
         dtype=quat.dtype
     )
 
+
 def dot(quat1, quat2):
     """Calculate the dot product of quaternions.
 
@@ -380,7 +406,8 @@ def dot(quat1, quat2):
     """
     return vector4.dot(quat1, quat2)
 
-@all_parameters_as_numpy_arrays
+
+# @all_parameters_as_numpy_arrays
 def conjugate(quat):
     """Calculates a quaternion with the opposite rotation.
 
@@ -400,7 +427,8 @@ def conjugate(quat):
         dtype=quat.dtype
     )
 
-@parameters_as_numpy_arrays('quat')
+
+# @parameters_as_numpy_arrays('quat')
 def exp(quat):
     """Calculate the exponential of the quaternion
 
@@ -425,10 +453,11 @@ def exp(quat):
             quat[2] * s,
             np.cos(vector_norm),
         ],
-        dtype = quat.dtype
+        dtype=quat.dtype
     )
 
-@parameters_as_numpy_arrays('quat')
+
+# @parameters_as_numpy_arrays('quat')
 def power(quat, exponent):
     """Multiplies the quaternion by the exponent.
 
@@ -462,6 +491,7 @@ def power(quat, exponent):
         dtype=quat.dtype
     )
 
+
 def inverse(quat):
     """Calculates the inverse quaternion.
 
@@ -475,7 +505,8 @@ def inverse(quat):
     """
     return conjugate(quat) / length(quat)
 
-@all_parameters_as_numpy_arrays
+
+# @all_parameters_as_numpy_arrays
 def negate(quat):
     """Calculates the negated quaternion.
 
@@ -487,10 +518,12 @@ def negate(quat):
     """
     return quat * -1.0
 
+
 def is_identity(quat):
     return np.allclose(quat, [0.,0.,0.,1.])
 
-@all_parameters_as_numpy_arrays
+
+# @all_parameters_as_numpy_arrays
 def apply_to_vector(quat, vec):
     """Rotates a vector by a quaternion.
 
@@ -516,3 +549,6 @@ def apply_to_vector(quat, vec):
         return vec
     else:
         raise ValueError("Vector size unsupported")
+
+
+jit_module(nopython=True, error_model="numpy")

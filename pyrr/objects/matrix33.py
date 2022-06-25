@@ -64,6 +64,7 @@ from multipledispatch import dispatch
 from .base import BaseObject, BaseMatrix, BaseMatrix33, BaseQuaternion, BaseVector, NpProxy
 from .. import matrix33
 
+
 class Matrix33(BaseMatrix33):
     _module = matrix33
     _shape = (3,3,)
@@ -130,7 +131,7 @@ class Matrix33(BaseMatrix33):
 
             # matrix44
             if obj.shape == (4,4) or isinstance(obj, Matrix44):
-                obj = matrix33.create_from_matrix44(obj, dtype=dtype)
+                obj = matrix33.create_from_matrix44(obj)
             # quaternion
             elif obj.shape == (4,) or isinstance(obj, Quaternion):
                 obj = matrix33.create_from_quaternion(obj, dtype=dtype)

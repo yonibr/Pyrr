@@ -3,6 +3,8 @@ try:
 except:
     import unittest
 import numpy as np
+
+from numpy import float32
 from pyrr import matrix44, quaternion, vector3
 
 
@@ -458,20 +460,20 @@ class test_matrix44(unittest.TestCase):
     
     def test_decompose(self):
         # define expectations
-        expected_scale = vector3.create(*[1, 1, 2], dtype='f4')
-        expected_rotation = quaternion.create_from_y_rotation(np.pi, dtype='f4')
-        expected_translation = vector3.create(*[10, 0, -5], dtype='f4')
+        expected_scale = vector3.create(*[1, 1, 2], dtype=float32)
+        expected_rotation = quaternion.create_from_y_rotation(np.pi, dtype=float32)
+        expected_translation = vector3.create(*[10, 0, -5], dtype=float32)
         expected_model = np.array([
             [-1, 0, 0, 0],
             [0, 1, 0, 0],
             [0, 0, -2, 0],
             [10, 0, -5, 1],
-        ], dtype='f4')
+        ], dtype=float32)
 
         # compose matrix using Pyrr
-        s = matrix44.create_from_scale(expected_scale, dtype='f4')
-        r = matrix44.create_from_quaternion(expected_rotation, dtype='f4')
-        t = matrix44.create_from_translation(expected_translation, dtype='f4')
+        s = matrix44.create_from_scale(expected_scale, dtype=float32)
+        r = matrix44.create_from_quaternion(expected_rotation, dtype=float32)
+        t = matrix44.create_from_translation(expected_translation, dtype=float32)
         model = s.dot(r).dot(t)
         np.testing.assert_almost_equal(model, expected_model)
         self.assertTrue(model.dtype == expected_model.dtype)

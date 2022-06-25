@@ -126,7 +126,7 @@ class Quaternion(BaseQuaternion):
     def from_eulers(cls, eulers, dtype=None):
         """Creates a Quaternion from the specified Euler angles.
         """
-        return cls(quaternion.create_from_eulers(eulers, dtype))
+        return cls(quaternion.create_from_eulers(eulers))
 
     @classmethod
     def from_inverse_of_eulers(cls, eulers, dtype=None):

@@ -8,6 +8,9 @@ numpy.array.T method.
 """
 from __future__ import absolute_import, division, print_function
 import numpy as np
+
+from numba import jit_module
+
 from . import vector, quaternion, euler
 from .utils import all_parameters_as_numpy_arrays, parameters_as_numpy_arrays
 
@@ -21,17 +24,20 @@ def create_identity(dtype=None):
     """
     return np.identity(3, dtype=dtype)
 
-def create_from_matrix44(mat, dtype=None):
+
+def create_from_matrix44(mat):
     """Creates a Matrix33 from a Matrix44.
 
     :rtype: numpy.array
     :return: A matrix with shape (3,3) with the input matrix rotation.
     """
-    mat = np.asarray(mat)
-    return np.array(mat[0:3,0:3], dtype=dtype)
 
-@parameters_as_numpy_arrays('eulers')
-def create_from_eulers(eulers, dtype=None):
+    # mat = np.asarray(mat)
+    # return np.array(mat[0:3, 0:3], dtype=dtype)
+    return np.ascontiguousarray(mat[0:3, 0:3])
+
+
+def create_from_eulers(eulers):
     """Creates a matrix from the specified Euler rotations.
 
     :param numpy.array eulers: A set of euler rotations in the format
@@ -39,7 +45,7 @@ def create_from_eulers(eulers, dtype=None):
     :rtype: numpy.array
     :return: A matrix with shape (3,3) with the euler's rotation.
     """
-    dtype = dtype or eulers.dtype
+    dtype = eulers.dtype
 
     pitch, roll, yaw = euler.pitch(eulers), euler.roll(eulers), euler.yaw(eulers)
 
@@ -75,7 +81,6 @@ def create_from_eulers(eulers, dtype=None):
     )
 
 
-@parameters_as_numpy_arrays('axis')
 def create_from_axis_rotation(axis, theta, dtype=None):
     """Creates a matrix from the specified theta rotation around an axis.
 
@@ -84,14 +89,14 @@ def create_from_axis_rotation(axis, theta, dtype=None):
     :rtype: numpy.array
     :return: A matrix with shape (3,3).
     """
-    dtype = dtype or axis.dtype
+    dtype = dtype if dtype is not None else axis.dtype
 
-    axis = vector.normalize(axis)
-    x,y,z = axis
+    axis /= np.sqrt(np.sum(axis**2))
+    x, y, z = axis
 
-    s = np.sin(theta);
-    c = np.cos(theta);
-    t = 1 - c;
+    s = np.sin(theta)
+    c = np.cos(theta)
+    t = 1 - c
 
     # Construct the elements of the rotation matrix
     return np.array(
@@ -104,7 +109,7 @@ def create_from_axis_rotation(axis, theta, dtype=None):
     )
 
 
-@parameters_as_numpy_arrays('quat')
+# @parameters_as_numpy_arrays('quat')
 def create_from_quaternion(quat, dtype=None):
     """Creates a matrix with the same rotation as a quaternion.
 
@@ -112,11 +117,11 @@ def create_from_quaternion(quat, dtype=None):
     :rtype: numpy.array
     :return: A matrix with shape (3,3) with the quaternion's rotation.
     """
-    dtype = dtype or quat.dtype
+    dtype = dtype if dtype is not None else quat.dtype
 
     # the quaternion must be normalized
-    if not np.isclose(np.linalg.norm(quat), 1.):
-        quat = quaternion.normalize(quat)
+    # if not np.isclose(np.linalg.norm(quat), 1.):
+    quat /= np.sqrt(np.sum(quat**2))
 
     # http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
     qx, qy, qz, qw = quat[0], quat[1], quat[2], quat[3]
@@ -150,7 +155,7 @@ def create_from_quaternion(quat, dtype=None):
     ], dtype=dtype)
 
 
-@parameters_as_numpy_arrays('quat')
+# @parameters_as_numpy_arrays('quat')
 def create_from_inverse_of_quaternion(quat, dtype=None):
     """Creates a matrix with the inverse rotation of a quaternion.
 
@@ -159,7 +164,7 @@ def create_from_inverse_of_quaternion(quat, dtype=None):
     :return: A matrix with shape (3,3) that respresents the inverse of
         the quaternion.
     """
-    dtype = dtype or quat.dtype
+    dtype = dtype if dtype is not None else quat.dtype
 
     x, y, z, w = quat
 
@@ -206,6 +211,7 @@ def create_from_inverse_of_quaternion(quat, dtype=None):
         dtype=dtype
     )
 
+
 def create_from_scale(scale, dtype=None):
     """Creates an identity matrix with the scale set.
 
@@ -220,6 +226,7 @@ def create_from_scale(scale, dtype=None):
     if dtype:
         m = m.astype(dtype)
     return m
+
 
 def create_from_x_rotation(theta, dtype=None):
     """Creates a matrix with the specified rotation about the X axis.
@@ -243,6 +250,7 @@ def create_from_x_rotation(theta, dtype=None):
         dtype=dtype
     )
 
+
 def create_from_y_rotation(theta, dtype=None):
     """Creates a matrix with the specified rotation about the Y axis.
 
@@ -264,6 +272,7 @@ def create_from_y_rotation(theta, dtype=None):
         ],
         dtype=dtype
     )
+
 
 def create_from_z_rotation(theta, dtype=None):
     """Creates a matrix with the specified rotation about the Z axis.
@@ -287,7 +296,7 @@ def create_from_z_rotation(theta, dtype=None):
         dtype=dtype
     )
 
-@parameters_as_numpy_arrays('vec')
+# @parameters_as_numpy_arrays('vec')
 def apply_to_vector(mat, vec):
     """Apply a matrix to a vector.
 
@@ -307,6 +316,7 @@ def apply_to_vector(mat, vec):
     else:
         raise ValueError("Vector size unsupported")
 
+
 def multiply(m1, m2):
     """Multiply two matricies, m1 . m2.
 
@@ -322,6 +332,7 @@ def multiply(m1, m2):
     """
     return np.dot(m1, m2)
 
+
 def inverse(mat):
     """Returns the inverse of the matrix.
 
@@ -334,6 +345,7 @@ def inverse(mat):
     .. seealso:: http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.inv.html
     """
     return np.linalg.inv(mat)
+
 
 def create_direction_scale(direction, scale):
     """Creates a matrix which can apply a directional scaling to a set of vectors.
@@ -364,8 +376,8 @@ def create_direction_scale(direction, scale):
     n.z is the z component of n
     k is the scaling factor
     """
-    if not np.isclose(np.linalg.norm(direction), 1.):
-        direction = vector.normalize(direction)
+    # if not np.isclose(np.linalg.norm(direction), 1.):
+    direction /= np.sqrt(np.sum(direction**2))
 
     x,y,z = direction
 
@@ -405,3 +417,6 @@ def create_direction_scale(direction, scale):
             ]
         ]
     )
+
+
+jit_module(nopython=True, error_model="numpy")

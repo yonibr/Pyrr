@@ -2,11 +2,15 @@
 """Common Vector manipulation functions.
 """
 from __future__ import absolute_import, division, print_function
+
 import numpy as np
+
+from numba import jit_module
+
 from .utils import all_parameters_as_numpy_arrays, parameters_as_numpy_arrays
 
 
-@all_parameters_as_numpy_arrays
+# @all_parameters_as_numpy_arrays
 def normalize(vec):
     """normalizes an Nd list of vectors or a single vector
     to unit length.
@@ -34,11 +38,10 @@ def normalize(vec):
     # calculate the length
     # this is a duplicate of length(vec) because we
     # always want an array, even a 0-d array.
-    return (vec.T  / np.sqrt(np.sum(vec**2,axis=-1))).T
+    return (vec.T / np.sqrt(np.sum(vec**2,axis=-1))).T
 
 
-
-@all_parameters_as_numpy_arrays
+# @all_parameters_as_numpy_arrays
 def normalise(vec):    # TODO: mark as deprecated
     """normalizes an Nd list of vectors or a single vector
     to unit length.
@@ -66,11 +69,10 @@ def normalise(vec):    # TODO: mark as deprecated
     # calculate the length
     # this is a duplicate of length(vec) because we
     # always want an array, even a 0-d array.
-    return (vec.T  / np.sqrt(np.sum(vec**2,axis=-1))).T
+    return (vec.T / np.sqrt(np.sum(vec**2,axis=-1))).T
 
 
-
-@all_parameters_as_numpy_arrays
+# @all_parameters_as_numpy_arrays
 def squared_length(vec):
     """Calculates the squared length of a vector.
 
@@ -84,11 +86,10 @@ def squared_length(vec):
     will be a row vector, with each element representing the
     squared length along the matrix's corresponding row.
     """
-    lengths = np.sum(vec ** 2., axis=-1)
+    return np.sum(vec**2., axis=-1)
 
-    return lengths
 
-@all_parameters_as_numpy_arrays
+# @all_parameters_as_numpy_arrays
 def length(vec):
     """Returns the length of an Nd list of vectors
     or a single vector.
@@ -113,10 +114,10 @@ def length(vec):
     will be a row vector, with each element representing the
     length along the matrix's corresponding row.
     """
-    return np.sqrt(np.sum(vec**2,axis=-1))
+    return np.sqrt(np.sum(vec**2, axis=-1))
 
 
-@parameters_as_numpy_arrays('vec')
+# @parameters_as_numpy_arrays('vec')
 def set_length(vec, len):
     """Renormalizes an Nd list of vectors or a single vector to 'length'.
 
@@ -144,10 +145,10 @@ def set_length(vec, len):
     # this is a duplicate of length(vec) because we
     # always want an array, even a 0-d array.
 
-    return (vec.T  / np.sqrt(np.sum(vec**2,axis=-1)) * len).T
+    return (vec.T / np.sqrt(np.sum(vec**2,axis=-1)) * len).T
 
 
-@all_parameters_as_numpy_arrays
+# @all_parameters_as_numpy_arrays
 def dot(v1, v2):
     """Calculates the dot product of two vectors.
 
@@ -163,7 +164,8 @@ def dot(v1, v2):
     """
     return np.sum(v1 * v2, axis=-1)
 
-@parameters_as_numpy_arrays('v1', 'v2')
+
+# @parameters_as_numpy_arrays('v1', 'v2')
 def interpolate(v1, v2, delta):
     """Interpolates between 2 arrays of vectors (shape = N,3)
     by the specified delta (0.0 <= delta <= 1.0).
@@ -190,8 +192,11 @@ def interpolate(v1, v2, delta):
     # http://stackoverflow.com/questions/5448322/temporal-interpolation-in-numpy-matplotlib
     return v1 + ((v2 - v1) * delta)
     #return v1 * (1.0 - delta ) + v2 * delta
-    t = delta
-    t0 = 0.0
-    t1 = 1.0
-    delta_t = t1 - t0
-    return (t1 - t) / delta_t * v1 + (t - t0) / delta_t * v2
+    # t = delta
+    # t0 = 0.0
+    # t1 = 1.0
+    # delta_t = t1 - t0
+    # return (t1 - t) / delta_t * v1 + (t - t0) / delta_t * v2
+
+
+jit_module(nopython=True, error_model="numpy")

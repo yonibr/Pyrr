@@ -2,8 +2,10 @@
 """Provides common utility functions.
 """
 import inspect
-from functools import wraps
 import numpy as np
+
+from functools import wraps
+from numba import njit
 
 
 def all_parameters_as_numpy_arrays(fn):
@@ -24,6 +26,7 @@ def all_parameters_as_numpy_arrays(fn):
                 kwargs[k] = np.asarray(v)
         return fn(*args, **kwargs)
     return wrapper
+
 
 def parameters_as_numpy_arrays(*args_to_convert):
     """Converts specific arguments to numpy arrays.
@@ -75,6 +78,8 @@ def parameters_as_numpy_arrays(*args_to_convert):
         return wrapper
     return decorator
 
+
+@njit
 def solve_quadratic_equation(a, b, c):
     """Quadratic equation solver.
     Solve function of form f(x) = ax^2 + bx + c
