@@ -157,4 +157,4 @@ class unit:
     z = create_unit_length_z()
 
 
-jit_module(nopython=True, error_model="numpy")
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)

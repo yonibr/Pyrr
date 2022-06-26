@@ -42,50 +42,75 @@ class BaseObject(np.ndarray):
         self[:] = self.__div__(other)
         return self
 
+
 class BaseMatrix(BaseObject):
     @classmethod
     def identity(cls, dtype=None):
         """Creates an identity Matrix.
         """
-        return cls(cls._module.create_identity(dtype), dtype)
+        res = cls(np.identity(cls.shape[0], dtype=dtype), dtype)
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @classmethod
     def from_eulers(cls, eulers, dtype=None):
         """Creates a Matrix from the specified Euler angles.
         """
-        return cls(cls._module.create_from_eulers(eulers, dtype=dtype))
+        res = cls(cls._module.create_from_eulers(eulers))
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @classmethod
     def from_quaternion(cls, quat, dtype=None):
         """Creates a Matrix from a Quaternion.
         """
-        return cls(cls._module.create_from_quaternion(quat, dtype=dtype))
+        res = cls(cls._module.create_from_quaternion(quat))
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @classmethod
     def from_inverse_of_quaternion(cls, quat, dtype=None):
         """Creates a Matrix from the inverse of the specified Quaternion.
         """
-        return cls(cls._module.create_from_inverse_of_quaternion(quat, dtype=dtype))
+        res = cls(cls._module.create_from_inverse_of_quaternion(quat))
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @classmethod
     def from_scale(cls, scale, dtype=None):
-        return cls(cls._module.create_from_scale(scale, dtype=dtype))
+        res = cls(cls._module.create_from_scale(scale))
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @classmethod
     def from_x_rotation(cls, theta, dtype=None):
         """Creates a Matrix with a rotation around the X-axis.
         """
-        return cls(cls._module.create_from_x_rotation(theta, dtype=dtype))
+        res = cls(cls._module.create_from_x_rotation(theta))
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @classmethod
     def from_y_rotation(cls, theta, dtype=None):
-        return cls(cls._module.create_from_y_rotation(theta, dtype=dtype))
+        res = cls(cls._module.create_from_y_rotation(theta))
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @classmethod
     def from_z_rotation(cls, theta, dtype=None):
         """Creates a Matrix with a rotation around the Z-axis.
         """
-        return cls(cls._module.create_from_z_rotation(theta, dtype=dtype))
+        res = cls(cls._module.create_from_z_rotation(theta))
+        if dtype is not None:
+            res = res.astype(dtype)
+        return res
 
     @property
     def inverse(self):

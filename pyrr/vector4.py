@@ -66,4 +66,5 @@ class unit:
     #: A vector of unit length in the Z-axis. (0.0, 0.0, 1.0, 0.0)
     z = create_unit_length_z()
 
-jit_module(nopython=True, error_model="numpy")
+
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)

@@ -74,4 +74,4 @@ def pitch(eulers):
     return eulers[1]
 
 
-jit_module(nopython=True, error_model="numpy")
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)
