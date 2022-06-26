@@ -82,4 +82,4 @@ def calculate_plane_size(aspect_ratio, fov, distance):
     return width * 2.0, height * 2.0
 
 
-jit_module(nopython=True, error_model="numpy")
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)

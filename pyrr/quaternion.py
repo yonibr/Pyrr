@@ -551,4 +551,4 @@ def apply_to_vector(quat, vec):
         raise ValueError("Vector size unsupported")
 
 
-jit_module(nopython=True, error_model="numpy")
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)

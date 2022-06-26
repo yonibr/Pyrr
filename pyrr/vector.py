@@ -38,7 +38,7 @@ def normalize(vec):
     # calculate the length
     # this is a duplicate of length(vec) because we
     # always want an array, even a 0-d array.
-    return (vec.T / np.sqrt(np.sum(vec**2,axis=-1))).T
+    return (vec.T / np.sqrt(np.sum(vec**2, axis=-1))).T
 
 
 # @all_parameters_as_numpy_arrays
@@ -199,4 +199,4 @@ def interpolate(v1, v2, delta):
     # return (t1 - t) / delta_t * v1 + (t - t0) / delta_t * v2
 
 
-jit_module(nopython=True, error_model="numpy")
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)
