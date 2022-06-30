@@ -69,7 +69,7 @@ def create_from_points(vector1, vector2, vector3):
         raise ValueError("Vectors are co-incident")
 
     # create our plane
-    return create_from_position(position=vector2, normal=normal, dtype=vector1.dtype)
+    return create_from_position(position=vector2, normal=normal)
 
 
 # @parameters_as_numpy_arrays('position', 'normal')
@@ -87,7 +87,7 @@ def create_from_position(position, normal):
     # -d = a * x  + b * y + c * z
     n = vector.normalize(normal)
     d = -np.sum(n * position)
-    return create(n, -d, position.dtype)
+    return create(n, -d)
 
 
 def create_xy(invert=False, distance=0.):

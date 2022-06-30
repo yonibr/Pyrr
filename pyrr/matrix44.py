@@ -193,40 +193,48 @@ def create_from_z_rotation(theta):
     return mat
 
 
+def apply_to_vectors(mat, vecs):
+    size = vecs.shape[len(vecs.shape) - 1]
+    if size == 3:
+        vec = np.asarray(vecs)
+        vec4 = np.column_stack(vec, np.ones(vec.shape[0], dtype=float32))
+        vec4 = np.dot(vec4, mat)
+        for i in range(vec4.shape[0]):
+            if np.abs(vec4[i, 3]) < 1e-8:
+                vec4[i, :] = [np.inf, np.inf, np.inf, np.inf]
+            else:
+                vec4[i, :] /= vec4[i, 3]
+        return vec4[:, :3]
+    elif size == 4:
+        return np.dot(vecs, mat)
+    else:
+        raise ValueError("Vector size unsupported")
+
+
 # @all_parameters_as_numpy_arrays
 def apply_to_vector(mat, vec):
     """Apply a matrix to a vector.
 
     The matrix's rotation and translation are applied to the vector.
-    Supports multiple matrices and vectors.
 
     :param numpy.array mat: The rotation / translation matrix.
-        Can be a list of matrices.
+        Changed to only support one matrix because of Numba integration
     :param numpy.array vec: The vector to modify.
-        Can be a numpy.array of vectors. ie. numpy.array([[x1,...], [x2,...], ...])
+        Changed to only support one matrix because of Numba integration. Use apply_to_vectors for
+        multiple vectors
     :rtype: numpy.array
     :return: The vectors rotated by the specified matrix.
     """
     size = vec.shape[len(vec.shape) - 1]
     if size == 3:
         # convert to a vec4
-        if len(vec.shape) == 1:
-            vec4 = np.array([vec[0], vec[1], vec[2], 1.], dtype=vec.dtype)
-            vec4 = np.dot(vec4, mat)
-            if np.abs(vec4[3]) < 1e-8:
-                vec4[:] = [np.inf, np.inf, np.inf, np.inf]
-            else:
-                vec4 /= vec4[3]
-            return vec4[:3]
+        vec4 = np.array([vec[0], vec[1], vec[2], 1.], dtype=vec.dtype)
+        vec4 = np.dot(vec4, mat)
+        if np.abs(vec4[3]) < 1e-8:
+            vec4[:] = [np.inf, np.inf, np.inf, np.inf]
         else:
-            vec4 = np.array([[v[0], v[1], v[2], 1.] for v in vec], dtype=vec.dtype)
-            vec4 = np.dot(vec4, mat)
-            for i in range(vec4.shape[0]):
-                if np.abs(vec4[i,3])<1e-8:
-                    vec4[i,:] = [np.inf, np.inf, np.inf, np.inf]
-                else:
-                    vec4[i,:] /= vec4[i,3]
-            return vec4[:,:3]
+            vec4 /= vec4[3]
+        return vec4[:3]
     elif size == 4:
         return np.dot(vec, mat)
     else:

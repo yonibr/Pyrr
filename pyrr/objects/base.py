@@ -16,6 +16,7 @@ class NpProxy(object):
 class BaseObject(np.ndarray):
     _module = None
     _shape = None
+
     def __new__(cls, obj):
         # ensure the object matches the required shape
         obj.shape = cls._shape
@@ -48,7 +49,8 @@ class BaseMatrix(BaseObject):
     def identity(cls, dtype=None):
         """Creates an identity Matrix.
         """
-        res = cls(np.identity(cls.shape[0], dtype=dtype), dtype)
+        mat = np.identity(cls._shape[0], dtype=dtype)
+        res = cls(mat, dtype)
         if dtype is not None:
             res = res.astype(dtype)
         return res
