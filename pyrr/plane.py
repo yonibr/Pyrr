@@ -166,3 +166,6 @@ def distance(plane):
     Negative value indicates the plane is facing the origin.
     """
     return plane[3]
+
+
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)

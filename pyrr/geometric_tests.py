@@ -5,6 +5,9 @@ various forms data types.
 from __future__ import absolute_import, division, print_function
 import math
 import numpy as np
+
+from numba import jit_module
+
 from . import rectangle, vector, vector3, plane
 from .utils import all_parameters_as_numpy_arrays, parameters_as_numpy_arrays, solve_quadratic_equation
 
@@ -16,7 +19,7 @@ TODO: line_intersect_line
 TODO: line_segment_intersect_line_segment
 """
 
-@all_parameters_as_numpy_arrays
+
 def point_intersect_line(point, line):
     """Calculates the intersection point of a point and aline.
 
@@ -33,7 +36,7 @@ def point_intersect_line(point, line):
         return None
     return point
 
-@all_parameters_as_numpy_arrays
+
 def point_intersect_line_segment(point, line):
     """Calculates the intersection point of a point and a line segment.
 
@@ -57,7 +60,7 @@ def point_intersect_line_segment(point, line):
         return None
     return point
 
-@all_parameters_as_numpy_arrays
+
 def point_intersect_rectangle(point, rect):
     """Calculates the intersection point of a point and a 2D rectangle.
 
@@ -75,7 +78,7 @@ def point_intersect_rectangle(point, rect):
         return None
     return point
 
-@parameters_as_numpy_arrays('ray', 'pl')
+
 def ray_intersect_plane(ray, pl, front_only=False):
     """Calculates the intersection point of a ray and a plane.
 
@@ -119,7 +122,7 @@ def ray_intersect_plane(ray, pl, front_only=False):
     t = (pd - p0_n) / rd_n
     return ray[0] + (ray[1] * t)
 
-@all_parameters_as_numpy_arrays
+
 def point_closest_point_on_ray(point, ray):
     """Calculates the point on a ray that is closest to a point.
 
@@ -142,7 +145,7 @@ def point_closest_point_on_ray(point, ray):
     t = vector.dot(relative_point, normalized_n)
     return ray[0] + (normalized_n * t)
 
-@all_parameters_as_numpy_arrays
+
 def point_closest_point_on_line(point, line):
     """Calculates the point on the line that is closest to
     the specified point.
@@ -169,7 +172,7 @@ def point_closest_point_on_line(point, line):
     dot = vector.dot(rl, rp)
     return line[0] + (rl * dot)
 
-@all_parameters_as_numpy_arrays
+
 def point_closest_point_on_line_segment(point, segment):
     """Calculates the point on the line segment that is closest
     to the specified point.
@@ -202,7 +205,7 @@ def point_closest_point_on_line_segment(point, segment):
     # perform the same calculation as closest_point_on_line
     return segment[0] + (rl * dot)
 
-@all_parameters_as_numpy_arrays
+
 def vector_parallel_vector(v1, v2):
     """Checks if two vectors are parallel.
 
@@ -215,7 +218,7 @@ def vector_parallel_vector(v1, v2):
     cross = vector3.cross(v1, v2)
     return 0 == np.count_nonzero(cross)
 
-@all_parameters_as_numpy_arrays
+
 def ray_parallel_ray(ray1, ray2):
     """Checks if two rays are parallel.
 
@@ -227,7 +230,7 @@ def ray_parallel_ray(ray1, ray2):
     # isn't unit length
     return vector_parallel_vector(ray1[ 1 ], ray2[ 1 ])
 
-@all_parameters_as_numpy_arrays
+
 def ray_coincident_ray(ray1, ray2):
     """Check if rays are coincident.
 
@@ -256,7 +259,7 @@ def ray_coincident_ray(ray1, ray2):
         return True
     return False
 
-@all_parameters_as_numpy_arrays
+
 def ray_intersect_aabb(ray, aabb):
     """Calculates the intersection point of a ray and an AABB
 
@@ -306,7 +309,7 @@ def ray_intersect_aabb(ray, aabb):
     point = ray[0] + (ray[1] * t)
     return point
 
-@all_parameters_as_numpy_arrays
+
 def point_height_above_plane(point, pl):
     """Calculates how high a point is above a plane.
 
@@ -326,7 +329,7 @@ def point_height_above_plane(point, pl):
     """
     return vector.dot(plane.normal(pl), point - plane.position(pl))
 
-@all_parameters_as_numpy_arrays
+
 def point_closest_point_on_plane(point, pl):
     """Calculates the point on a plane that is closest to a point.
 
@@ -350,7 +353,7 @@ def point_closest_point_on_plane(point, pl):
     qn = np.dot(point, n)
     return point + (n * (d - qn))
 
-@all_parameters_as_numpy_arrays
+
 def sphere_does_intersect_sphere(s1, s2):
     """Checks if two spheres overlap.
 
@@ -376,7 +379,7 @@ def sphere_does_intersect_sphere(s1, s2):
         return False
     return True
 
-@all_parameters_as_numpy_arrays
+
 def sphere_penetration_sphere(s1, s2):
     """Calculates the distance two spheres have penetrated
     into one another.
@@ -401,7 +404,7 @@ def sphere_penetration_sphere(s1, s2):
         return 0.0
     return penetration
 
-@all_parameters_as_numpy_arrays
+
 def ray_intersect_sphere(ray, sphere):
     """ Returns the intersection points of a ray and a sphere.
     See: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
@@ -438,3 +441,6 @@ def ray_intersect_sphere(ray, sphere):
         if t >= 0:
             ret.append(ray_origin + ray_direction * t)
     return ret
+
+
+jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)
