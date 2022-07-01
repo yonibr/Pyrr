@@ -197,7 +197,7 @@ def apply_to_vectors(mat, vecs):
     size = vecs.shape[len(vecs.shape) - 1]
     if size == 3:
         vec = np.asarray(vecs)
-        vec4 = np.column_stack(vec, np.ones(vec.shape[0], dtype=float32))
+        vec4 = np.column_stack((vec, np.ones(vec.shape[0], dtype=float32)))
         vec4 = np.dot(vec4, mat)
         for i in range(vec4.shape[0]):
             if np.abs(vec4[i, 3]) < 1e-8:
