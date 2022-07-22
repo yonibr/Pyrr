@@ -443,4 +443,9 @@ def ray_intersect_sphere(ray, sphere):
     return ret
 
 
+def three_plane_intersection_point(plane1, plane2, plane3):
+    m = np.row_stack((plane1, plane2, plane3))
+    return np.linalg.solve(m[:, :3], m[:, 3])
+
+
 jit_module(nopython=True, error_model='numpy', nogil=True, fastmath=True)
