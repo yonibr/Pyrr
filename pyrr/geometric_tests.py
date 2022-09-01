@@ -106,8 +106,8 @@ def ray_intersect_plane(ray, pl, front_only=False):
     if rd.n == 0, the ray is parallel to the
     plane.
     """
-    p = plane.position(pl)
-    n = plane.normal(pl)
+    n = pl[:3]
+    p = n * pl[3]
     rd_n = vector.dot(ray[1], n)
 
     if rd_n == 0.0:
@@ -327,7 +327,8 @@ def point_height_above_plane(point, pl):
         p is the plane position
         p0 is the point
     """
-    return vector.dot(plane.normal(pl), point - plane.position(pl))
+    n = pl[:3]
+    return vector.dot(n, point - n * pl[3])
 
 
 def point_closest_point_on_plane(point, pl):
@@ -347,8 +348,8 @@ def point_closest_point_on_plane(point, pl):
     d is the value of normal dot position
     n is the plane normal
     """
-    n = plane.normal(pl)
-    p = n * plane.distance(pl)
+    n = pl[:3]
+    p = n * pl[3]
     d = np.dot(p, n)
     qn = np.dot(point, n)
     return point + (n * (d - qn))
